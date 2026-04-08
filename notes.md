@@ -14,8 +14,6 @@ has_children: true
 
 | Compute | Messaging |
 
-| :--- | :--- |
-
 | • [EC2](./notes/compute/ec2.html) | • [SQS](./notes/messaging/sqs.html) |
 
 | • [Lambda](./notes/compute/lambda.html) | • [SNS](./notes/messaging/sns.html) |

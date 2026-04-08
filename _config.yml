@@ -1,0 +1,4 @@
+# _config.yml
+title: AWS Notes for Certification Exams
+remote_theme: just-the-docs/just-the-docs
+color_scheme: dark # To match the dark Notion aesthetic

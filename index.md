@@ -10,3 +10,4 @@ Welcome to the resource hub. Use the sidebar to navigate through notes and diagr
 
 ## Quick Links
 * [Official Exam Guide](https://aws.amazon.com/certification/)
+* [Notes](notes.md)

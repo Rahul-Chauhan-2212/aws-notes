@@ -1,7 +1,7 @@
 ---
 layout: default
-title: VPC
-parent: ELB
+title: EBB
+parent: Notes
 nav_order: 5
 ---
 

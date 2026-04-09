@@ -2,7 +2,7 @@
 layout: default
 title: VPC
 parent: ELB
-nav_order: 2
+nav_order: 5
 ---
 
 # ⚖️ ELB (Elastic Load Balancing)

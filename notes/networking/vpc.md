@@ -2,7 +2,7 @@
 layout: default
 title: VPC
 parent: Notes
-nav_order: 1
+nav_order: 4
 ---
 
 # 🌐 VPC (Virtual Private Cloud)

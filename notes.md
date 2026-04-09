@@ -14,15 +14,6 @@ has_children: true
 - [Lambda](./notes/compute/lambda.html)
 - [Step Functions](./notes/compute/step-functions.html)
 
-## Messaging
-- [SQS](./notes/messaging/sqs.html)
-- [SNS](./notes/messaging/sns.html)
-- [EventBridge](./notes/messaging/eventbridge.html)
-- [Kinesis](./notes/messaging/kinesis.html)
-- [AppSync](./notes/messaging/appsync.html)
-- [MSK](./notes/messaging/msk.html)
-- [SES](./notes/messaging/ses.html)
-
 ## Networking
 - [VPC](./notes/networking/vpc.html)
 - [Route 53](./notes/networking/route53.html)
@@ -47,6 +38,15 @@ has_children: true
 - [Amazon ECS](./notes/containers/ecs.html)
 - [ECR](./notes/containers/ecr.html)
 - [AWS Copilot](./notes/containers/copilot.html)
+
+## Messaging
+- [SQS](./notes/messaging/sqs.html)
+- [SNS](./notes/messaging/sns.html)
+- [EventBridge](./notes/messaging/eventbridge.html)
+- [Kinesis](./notes/messaging/kinesis.html)
+- [AppSync](./notes/messaging/appsync.html)
+- [MSK](./notes/messaging/msk.html)
+- [SES](./notes/messaging/ses.html)
 
 ## Infrastructure
 - [ASG](./notes/infra/asg.html)

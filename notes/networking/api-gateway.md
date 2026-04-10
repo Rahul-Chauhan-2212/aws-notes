@@ -163,3 +163,102 @@ nav_order: 7
 
 <img width="1024" height="296" alt="image" src="https://github.com/user-attachments/assets/1e71b971-f785-4112-8af6-b11b74f04aa5" />
 
+## OpenAPI Spec
+
+- Define REST APIs as configuration (YAML or JSON)
+- Also allows to import AWS specific parameters and extensions
+- Export as OpenAPI spec to generate SDK for clients
+- API schema can also be defined in the OpenAPI spec
+    - Allows API gateway to validate incoming requests for correct schema
+    - Returns 400 status code if the validation fails
+    - Reduces unnecessary calls to the backend
+    - Examples
+        
+       <img width="608" height="602" alt="image" src="https://github.com/user-attachments/assets/013db604-774b-45ac-a212-6512a9c154bc" />
+
+        
+      <img width="964" height="390" alt="image" src="https://github.com/user-attachments/assets/c2d3b876-ca7d-4f96-8691-de7e3eadd222" />
+
+        
+      <img width="962" height="278" alt="image" src="https://github.com/user-attachments/assets/32623cc0-a5f7-4170-8f7b-018cae8ff6ce" />
+
+        
+
+## Caching API Responses
+
+- Reduces the number of calls made to the backend
+- **TTL: 0 s - 1 h (default 300 sec)**
+- Caching at the stage level
+- Ability to override cache settings at the method level
+- Cache capacity: 0.5 GB - 237 GB
+- Cache can be encrypted
+- Caching is expensive (use only in production)
+
+<img width="512" height="621" alt="image" src="https://github.com/user-attachments/assets/1e8afeb4-0a0d-471f-a931-6bbc62b758eb" />
+
+
+### Cache Invalidation
+
+- Invalidate the entire cache from console
+- Clients can invalidate the cache for a request by adding a header `Cache-Control: max-age=0` in the request. This will send the request to the backend and update the cache with the response.
+    
+    Recommended to impose an IAM policy to allow only the clients to invalidate the cache. Without an IAM policy or Authorization Disabled, anyone can invalidate the cache.
+    
+ <img width="1004" height="512" alt="image" src="https://github.com/user-attachments/assets/00c4662c-ac49-4de2-800a-2c30b3c86c30" />
+    
+- Tick the `Require authorization` checkbox to only allow authorized clients to invalidate the cache.
+
+
+
+## Usage Plans
+
+- Used to monetize the APIs
+    - Which clients can access what stages and methods
+    - Throttling and quota limits for each client
+- Clients use API keys to access the APIs (passed in `X-API-Key` header)
+- Throttling limits are applied for each API key
+- Clients are billed based on the API calls using their API keys
+
+### Steps to setup a Usage Plan
+
+- Create the API and deploy them to the right stages
+- Generate API keys and distribute them to the customers
+- Create a usage plan with the desired throttle and quota limits
+- **Associate** API stages and **API keys with the usage plan** using `CreateUsagePlanKey` API
+
+## Observability
+
+### Logging
+
+- Logs contain the request and response passing through API gateway
+- **Can be enabled at the stage level**
+- Can override the logging settings at the API level
+- Sent to CloudWatch logs (set Log Level: `ERROR`, `DEBUG`, `INFO`)
+- Two types of logs:
+    - **Execution Logs**: log requests, responses, etc.
+    - **Access Logs**: who accessed the API and how
+
+### Tracing
+
+- Enable X-Ray to trace API calls
+
+### Metrics
+
+- Metrics are available at the stage level
+- Can enable detailed metrics
+- Key metrics:
+    - `CacheHitCount` & `CacheMissCount`
+    - `Count` - request count within a period
+    - `IntegrationLatency` - how long the backend takes to reply to the API gateway
+    - `Latency` - how long client had to wait to get a response from API gateway (includes integration latency and other API Gateway overheads such as authorization)
+    - `4XXError` - client side error count
+    - `5XXError` - server sider error count
+
+## Performance
+
+- **Max timeout: 29 sec**
+- Throttling limit - 10,000 req/sec across all APIs (account level soft limit)
+    - `429 Too Many Requests` error in case of throttling
+    - If one API is getting too many requests, it can throttle other APIs
+    - Set stage limits or method limits to prevent overuse
+    - Create a usage plan to throttle per customer

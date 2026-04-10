@@ -262,3 +262,117 @@ nav_order: 7
     - If one API is getting too many requests, it can throttle other APIs
     - Set stage limits or method limits to prevent overuse
     - Create a usage plan to throttle per customer
+ 
+## Cross Origin Resource Sharing (CORS)
+
+- Enable if you will receive API calls from another domain
+- The response of pre-flight request must contain `Access-Control-Allow-Origin` header to allow the cross-origin client to make API calls.
+- When the integration type is proxy-based, the responses are proxied to the client without modification by API gateway. So, CORS needs to be handled by the backend itself.
+- For non-proxy integrations, CORS can be handled by API gateway.
+- `MaxAgeSeconds` specifies the TTL used by browser to cache pre-flight response
+- The client-side JS in the website (`www.example.com`) wants to make an API call to the backend hosted via API gateway at `api.example.com`. The browser will first make a pre-flight request to the backend asking what methods are allowed for `www.example.com`. If CORS is enabled, API gateway will allow the required methods.
+
+  <img width="1808" height="808" alt="image" src="https://github.com/user-attachments/assets/161a4f22-d59e-44dd-9f0d-715072ff104e" />
+
+
+## TLS Termination
+
+- TLS certificates can be referenced from ACM
+- Edge-Optimized endpoint → certificate must be in `us-east-1`
+- Regional endpoint → certificate must be in the same region as API Gateway
+- Must setup CNAME or A-alias record in Route 53 to point to the API gateway endpoint
+
+## User Authentication
+
+### IAM
+
+<img width="1024" height="379" alt="image" src="https://github.com/user-attachments/assets/2ebb64ab-d05e-48bd-8643-55c8cf3bbcc2" />
+
+
+
+- IAM User or Role for authentication
+- IAM Policy applied to principals for authorization (access control)
+- Fully integrated with API gateway (no custom implementation needed)
+- Good to provide access within AWS
+- Leverages **SigV4** to sign the credentials in the header
+- **Resource-based policies** can be used to allow the following access to API gateway
+    - IAM Users and Roles in another account (cross-account access)
+    - IP Addresses
+    - VPC Endpoint
+ 
+### Cognito User Pools (CUP)
+
+<img width="1024" height="402" alt="image" src="https://github.com/user-attachments/assets/92a816ba-7eba-41e6-96b1-3482a33f6de8" />
+
+
+The client first authenticates themselves to CUP and get the token. They pass the token along with the request to API gateway. API gateway verifies the token with Cognito before forwarding the request to the backend.
+
+- Cognito is AWS managed identity provider. It fully manages user lifecycle and expires tokens automatically.
+- Fully integrated with API gateway (no custom implementation needed)
+- **Only provides authentication** (access to the API) (authorization needs to be managed in the backend)
+- Good to provide access to external users
+
+### Lambda Authorizer
+
+<img width="1598" height="520" alt="image" src="https://github.com/user-attachments/assets/83a2180c-5bd1-46f8-b7de-83337b30b190" />
+
+The client authenticates themselves to a 3rd party IDP and retrieve the token. The token is passed along with the request to the API gateway. The lambda authorizer takes the token, decodes it and determines the required IAM permissions. It can optionally verify the token with the IDP. The lambda authorizer then creates an IAM principal and policy granting the required permissions.
+
+- Custom authorization logic (manual integration)
+- Authentication is handled externally
+- Authorization is performed by the lambda function
+- Enable caching the result of authorization (recommended)
+- Recommended to use this and not just rely on API keys for enhanced security.
+- Two types:
+    - **Token-based Lambda authorizer** (Token Authorizer) uses JWT or OAuth **for 3rd party authentication system**
+    - **Request parameter-based Lambda authorizer** (Request Authorizer) receives the caller's identity in a combination of headers, query string parameters, stageVariables, and `$context` variables.
+      
+ 
+## API Types
+
+### **REST**
+
+- Standard APIs that we mostly create
+- Supports resource-based policy
+- **Does not support OIDC and OAuth 2.0 natively**
+
+### **HTTP**
+
+- **Low-latency** & cost effective **proxies** to Lambda or any HTTP endpoint (no data mapping)
+- Supports OIDC and OAuth 2.0
+- No usage plans and API keys
+- Does not support resource-based policies
+- **Cheaper than REST APIs**
+
+### **WebSocket**
+
+- 2 - way communication between the client and the server
+- Connection is persistent and stateful
+- Used in real-time chat application, collaboration platforms, multiplayer games and financial trading platforms.
+- The backend can be anything (AWS services or any HTTP endpoint)
+- Establishing a WebSocket Connection
+    
+    The client sends a request to the WebSocket url (`wss://[some-uniqueid].execute-api.[region].amazonaws.com/[stage-name]`) of API gateway. This establishes a persistent connection between the client and the API gateway. The API gateway calls a Lambda function (`onConnect`) and passes the connectionId which is then stored in DynamoDB (stateful).
+    
+    <img width="1666" height="270" alt="image" src="https://github.com/user-attachments/assets/ba989cbd-4763-48b5-86f3-a58690acce8c" />
+
+    
+- Client → Server Messaging
+    
+    Once the WebSocket connection is established, the client can keep on sending messages (frames) to the server on the same WebSocket URL through the same persistent connection. The sent frames will invoke another lambda function to perform the desired action.
+    
+    <img width="1704" height="272" alt="image" src="https://github.com/user-attachments/assets/753c9e5b-be96-4d6c-8cad-91471e079fda" />
+
+    
+- Server → Client Messaging
+    
+    A lambda function can make an HTTP POST request (signed by SigV4) to the **Connection URL** (WebSocket URL + `/@connections/[connectionId]`) to send messages to the client through the API gateway.
+    
+    <img width="1678" height="548" alt="image" src="https://github.com/user-attachments/assets/d02eef6e-f8ce-4133-89a0-61367ca6b721" />
+    
+- Operations on WebSocket Connection URL (WebSocket URL + `/@connections/[connectionId]`)
+    - `POST` - Send a message from the Server to the connected WS Client
+    - `GET` - Get the latest connection status of the connected WS Client
+    - `DELETE` - Disconnect the connected Client from the WS connection
+- **Routing**: Incoming JSON messages from the client are routed to different backend based on the **Route Key Table** (defined in API gateway). We can specify route selection expression to route based on a field in the JSON message. If no match, it is sent to the `$default` route.
+
